@@ -23,3 +23,4 @@ while True:
 # When everything done, release the capture
 cap.release()
 cv.destroyAllWindows()
+## hello tui la QUan
