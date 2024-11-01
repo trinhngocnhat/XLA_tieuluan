@@ -3,7 +3,7 @@ from tkinter import filedialog
 from PIL import Image
 
 
-def open_image():
+def chon_hinh_anh():
   """
   Mở hộp thoại cho phép người dùng chọn file ảnh và hiển thị ảnh.
   """
@@ -28,5 +28,8 @@ def open_image():
   else:
     print("Không có file nào được chọn.")
 
+if __name__ == "__main__":
 # Gọi hàm để mở hộp thoại chọn file
-open_image()
+    chon_hinh_anh()
+
+# Hàn Nhật Minh coder chính

@@ -39,3 +39,5 @@ panel.pack(padx=10, pady=10)
 
 # Chạy vòng lặp giao diện
 root.mainloop()
+
+# Hàn Nhật Minh coder chính
