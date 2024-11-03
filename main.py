@@ -44,7 +44,6 @@ def calculate_predicted_accuracy(actual_list, predicted_list):
         else:
             if len(actual_plate) == len(predict_plate):
                 for a, p in zip(actual_plate, predict_plate):
-                    if a == p:
                         num_matches += 1
                 accuracy = str(round((num_matches / len(actual_plate)), 2) * 100)
                 accuracy += "%"
