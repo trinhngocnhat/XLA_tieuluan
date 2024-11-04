@@ -6,7 +6,7 @@ import glob
 import os
 
 # specify path to the license plate images folder as shown below
-path_for_license_plates = os.getcwd() + "/license-plates/**/*.jpg"
+path_for_license_plates = os.getcwd() + "bien_so_xe/GG.jpg"
 list_license_plates = []
 predicted_license_plates = []
 
