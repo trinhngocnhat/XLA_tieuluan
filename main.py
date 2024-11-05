@@ -1,53 +1,32 @@
-# Loading the required python modules
-import pytesseract # this is tesseract module
-import matplotlib.pyplot as plt
-import cv2 # this is opencv module
-import glob
-import os
+import tkinter as tk
+from chuc_nang.chuc_nang_chinh.chon_hinh_anh import chon_hinh_anh
+from chuc_nang.chuc_nang_chinh.open_camera import livestream
 
-# specify path to the license plate images folder as shown below
-path_for_license_plates = os.getcwd() + "bien_so_xe/GG.jpg"
-list_license_plates = []
-predicted_license_plates = []
+def display_prediction(prediction_text):
+    prediction_display.config(text=prediction_text)
 
-for path_to_license_plate in glob.glob(path_for_license_plates, recursive=True):
-    license_plate_file = path_to_license_plate.split("/")[-1]
-    license_plate, _ = os.path.splitext(license_plate_file)
+def livestream_with_prediction():
+    display_prediction(livestream())
 
-    # Here we append the actual license plate to a list
+def chon_hinh_anh_with_prediction():
+    display_prediction(chon_hinh_anh())
 
-    list_license_plates.append(license_plate)
+# Initialize the root window
+root = tk.Tk()
+root.title("Nhận diện biển số xe")
+root.geometry("1024x632")
+root.configure(bg="black")
 
-    # Read each license plate image file using openCV
-    img = cv2.imread(path_to_license_plate)
-    # We then pass each license plate image file
-    # to the Tesseract OCR engine using the Python library
-    # wrapper for it. We get back predicted_result for
-    # license plate. We append the predicted_result in a
-    # list and compare it with the original the license plate
-    predicted_result = pytesseract.image_to_string(img, lang='eng',
-                                                   config='--oem 3 --psm 6 -c tessedit_char_whitelist = ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
+# Create frames
+tk.Frame(root, bg="yellow", height=150).pack(fill=tk.BOTH, expand=True)
+prediction_display = tk.Label(root, text="Kết quả sẽ hiển thị ở đây", bg="light blue", font=("Helvetica", 10))
+prediction_display.pack(fill=tk.BOTH, expand=True)
+bottom_frame = tk.Frame(root, bg="black")
+bottom_frame.pack(fill=tk.BOTH, expand=True)
 
-    filter_predicted_result = "".join(predicted_result.split()).replace(":", "").replace("-", "")
-    predicted_license_plates.append(filter_predicted_result)
+# Add buttons
+tk.Button(bottom_frame, text="livestream", command=livestream_with_prediction, bg="yellow", font=("Helvetica", 10)).pack(side=tk.LEFT, padx=20, pady=20, ipadx=10, ipady=5)
+tk.Button(bottom_frame, text="chọn hình ảnh", command=chon_hinh_anh_with_prediction, bg="yellow", font=("Helvetica", 10)).pack(side=tk.RIGHT, padx=20, pady=20, ipadx=10, ipady=5)
 
-print("Actual License Plate", "\t", "Predicted License Plate", "\t", "Accuracy")
-print("--------------------", "\t", "-----------------------", "\t", "--------")
-
-
-def calculate_predicted_accuracy(actual_list, predicted_list):
-    for actual_plate, predict_plate in zip(actual_list, predicted_list):
-        accuracy = "0 %"
-        num_matches = 0
-        if actual_plate == predict_plate:
-            accuracy = "100 %"
-        else:
-            if len(actual_plate) == len(predict_plate):
-                for a, p in zip(actual_plate, predict_plate):
-                        num_matches += 1
-                accuracy = str(round((num_matches / len(actual_plate)), 2) * 100)
-                accuracy += "%"
-        print("	 ", actual_plate, "\t\t\t", predict_plate, "\t\t ", accuracy)
-
-
-calculate_predicted_accuracy(list_license_plates, predicted_license_plates)
+# Run the GUI main loop
+root.mainloop()
