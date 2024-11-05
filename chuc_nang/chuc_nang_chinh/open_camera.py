@@ -16,11 +16,8 @@ def livestream():
             print("Can't receive frame (stream end?). Exiting ...")
             break
 
-        # Flip the frame horizontally
-        flipped_frame = cv.flip(frame, 1)
-
         # Display the flipped frame
-        cv.imshow('Livestream - Press Q to Quit', flipped_frame)
+        cv.imshow('Livestream - Press Q to Quit', frame)
 
         # Break the loop when 'q' is pressed
         if cv.waitKey(1) == ord('q'):
