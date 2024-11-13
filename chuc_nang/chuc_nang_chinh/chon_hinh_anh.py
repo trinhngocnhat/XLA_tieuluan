@@ -1,35 +1,30 @@
-import tkinter as tk
-from tkinter import filedialog
-from PIL import Image
+from tkinter import filedialog, messagebox
+import cv2
+from chuc_nang.chuc_nang_default.nhan_dien import \
+    recognize_license_plate  # Import the function for license plate recognition
 
 
 def chon_hinh_anh():
-  """
-  Mở hộp thoại cho phép người dùng chọn file ảnh và hiển thị ảnh.
-  """
-  root = tk.Tk()
-  root.withdraw()  # Ẩn cửa sổ tkinter chính
+    """ Allow user to select an image file and process it to recognize license plates. """
+    file_path = filedialog.askopenfilename(filetypes=[("Image Files", "*.jpg;*.jpeg;*.png;*.bmp")])
+    if file_path:
+        # Read the image from file
+        image = cv2.imread(file_path)
 
-  file_path = filedialog.askopenfilename(
-      initialdir="/",
-      title="Chọn file ảnh",
-      filetypes=(
-          ("Tất cả các file", "*.*"),
-          ("File ảnh", "*.jpg;*.jpeg;*.png;*.bmp;*.gif"),
-      ),
-  )
+        if image is None:
+            messagebox.showerror("Lỗi", "Không thể mở hoặc đọc tệp ảnh.")
+            return None
 
-  if file_path:
-    try:
-      img = Image.open(file_path)
-      img.show()  # Hiển thị ảnh bằng ứng dụng xem ảnh mặc định
-    except Exception as e:
-      print(f"Lỗi khi mở ảnh: {e}")
-  else:
-    print("Không có file nào được chọn.")
+        # Perform License Plate Detection and OCR
+        image_with_plates = recognize_license_plate(image)
 
-if __name__ == "__main__":
-# Gọi hàm để mở hộp thoại chọn file
-    chon_hinh_anh()
+        # Display the processed image with rectangles drawn around detected license plates
+        cv2.imshow('License Plate Recognition', image_with_plates)
+        cv2.waitKey(0)  # Wait for a key press to close the window
+        cv2.destroyAllWindows()
 
-# Hàn Nhật Minh coder chính
+        # Return the processed image
+        return image_with_plates
+    else:
+        messagebox.showwarning("Cảnh báo", "Bạn chưa chọn ảnh nào.")
+        return None

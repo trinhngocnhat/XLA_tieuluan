@@ -1,32 +1,38 @@
-import numpy as np
-import cv2 as cv
+# chuc_nang_chinh/open_camera.py
+import cv2
+from tkinter import messagebox
+from chuc_nang.chuc_nang_default.nhan_dien import recognize_license_plate
+
 
 def livestream():
-    cap = cv.VideoCapture(0)
+    cap = cv2.VideoCapture(0)
     if not cap.isOpened():
-        print("Cannot open camera")
-        return
+        messagebox.showerror("Lỗi", "Không thể mở camera.")
+        return None
+
+    # Set the frame rate to 30 FPS
+    cap.set(cv2.CAP_PROP_FPS, 30)
+
+
+
 
     while True:
-        # Capture frame-by-frame
         ret, frame = cap.read()
-
-        # If frame is read correctly, ret is True
         if not ret:
-            print("Can't receive frame (stream end?). Exiting ...")
-            break
+            messagebox.showerror("Lỗi", "Không thể chụp ảnh từ camera.")
+            cap.release()
+            cv2.destroyAllWindows()
+            return None
 
-        # Display the flipped frame
-        cv.imshow('Livestream - Press Q to Quit', frame)
+        frame = recognize_license_plate(frame)
+
+        # Show the frame
+        cv2.imshow('Livestream - Press Q to Quit', frame)
 
         # Break the loop when 'q' is pressed
-        if cv.waitKey(1) == ord('q'):
+        if cv2.waitKey(1) == ord('q'):
             break
 
-    # Release the capture when everything is done
+    # Release the capture when done
     cap.release()
-    cv.destroyAllWindows()
-
-if __name__ == "__main__":
-    # Call the function
-    livestream()
+    cv2.destroyAllWindows()
