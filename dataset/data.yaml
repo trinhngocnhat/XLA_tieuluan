@@ -1,9 +1,8 @@
-train: ../train/images
-val: ../valid/images
-test: ../test/images
-
-nc: 1
-names: ['License_Plate']
+train: C:/Users/ASUS/Documents/GitHub/XLA_tieuluan/dataset/train/images
+val: C:/Users/ASUS/Documents/GitHub/XLA_tieuluan/dataset/valid/images
+test: C:/Users/ASUS/Documents/GitHub/XLA_tieuluan/dataset/test/images
+nc: 1  # Number of classes
+names: ['license_plate']  # Class names
 
 roboflow:
   workspace: roboflow-universe-projects
