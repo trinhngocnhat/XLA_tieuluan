@@ -1,13 +1,10 @@
-# -*- coding: utf-8 -*-
-
-# Form implementation generated from reading ui file 'license_layout.ui'
-# Created by: PyQt5 UI code generator 5.15.5
-
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QFileDialog
 import cv2
 from PyQt5.QtGui import QImage, QPixmap
-
+from ultralytics import YOLO
+import numpy as np
 
 class Ui_Frame(object):
     def setupUi(self, Frame):
@@ -28,10 +25,6 @@ class Ui_Frame(object):
         self.label = QtWidgets.QLabel(self.frame)
         self.label.setGeometry(QtCore.QRect(180, 10, 781, 41))
         self.label.setFont(self.create_font(size=22, bold=True))
-        self.label.setStyleSheet("color: qconicalgradient(cx:0.5, cy:0.5, angle:0, "
-                                 "stop:0 rgba(255, 255, 255, 255), stop:0.373979 rgba(255, 255, 255, 255), "
-                                 "stop:0.373991 rgba(33, 30, 255, 255), stop:0.624018 rgba(33, 30, 255, 255), "
-                                 "stop:0.624043 rgba(255, 0, 0, 255), stop:1 rgba(255, 0, 0, 255));")
         self.label.setAlignment(QtCore.Qt.AlignCenter)
         self.label.setObjectName("label")
 
@@ -47,41 +40,26 @@ class Ui_Frame(object):
 
         # Buttons
         self.btn_nhandang = self.create_button(self.frame_2, "Nhận Dạng", 960, 320)
-        self.btn_info = self.create_button(self.frame_2, "Thông Tin", 880, 370)
-        self.btn_chonanh = self.create_button(self.frame_2, "Chọn ảnh", 800, 320)
+        self.btn_info = self.create_button(self.frame_2, "Webcam", 880, 370)
+        self.btn_chonanh = self.create_button(self.frame_2, "Chọn file", 800, 320)
 
-        # Result label
+        # Result label (where the webcam feed or image will be displayed)
         self.lbl_result = self.create_label(self.frame_2, "result", 10, 20, 771, 741)
 
-        # Image label for showing original image
-        self.original_img = self.create_label(self.frame_2, "Ảnh bạn", 790, 20, 301, 291)
-
-        # Input fields for vehicle license plate info
-        self.let_bienso = self.create_input(self.frame_2, 880, 450, 211, 71, size=22)
-        self.let_tinh = self.create_input(self.frame_2, 880, 550, 211, 41, size=14)
-        self.let_gio = self.create_input(self.frame_2, 880, 630, 211, 41, size=14, bold=True)
-        self.let_ngay = self.create_input(self.frame_2, 880, 710, 211, 41, size=14, bold=True)
-        self.let_ten = self.create_input(self.frame_2, 880, 770, 211, 41, size=14)
-
-        # Labels for the inputs
-        self.create_label(self.frame_2, "Biển Số: ", 790, 470, 81, 31, size=10)
-        self.create_label(self.frame_2, "Tỉnh", 790, 550, 81, 41, size=10)
-        self.create_label(self.frame_2, "Gio", 790, 630, 81, 41, size=10)
-        self.create_label(self.frame_2, "Ngày", 790, 710, 81, 31, size=10)
-
-        # Spacer
-        self.spacer = self.create_label(self.frame_2, "", 790, 610, 211, 151, bg_color="rgb(255, 255, 255)")
-
+        # Add the main frame to the layout
         self.verticalLayout.addWidget(self.frame)
-        self.retranslateUi(Frame)
-        QtCore.QMetaObject.connectSlotsByName(Frame)
+
+        # Initialize webcam running state
+        self.is_webcam_running = False
 
         # Connect buttons to their respective functions
         self.btn_chonanh.clicked.connect(self.open_image)
         self.btn_info.clicked.connect(self.open_webcam)
 
+        # Load YOLO model
+        self.yolo_model = YOLO('C:/Users/ASUS/Documents/GitHub/XLA_tieuluan/runs/detect/train10/weights/best.pt')
+
     def create_font(self, size, bold=False):
-        """Helper function to create a font."""
         font = QtGui.QFont()
         font.setPointSize(size)
         font.setBold(bold)
@@ -89,7 +67,6 @@ class Ui_Frame(object):
         return font
 
     def create_button(self, parent, text, x, y):
-        """Helper function to create buttons."""
         button = QtWidgets.QPushButton(parent)
         button.setText(text)
         button.setGeometry(QtCore.QRect(x, y, 121, 41))
@@ -97,7 +74,6 @@ class Ui_Frame(object):
         return button
 
     def create_label(self, parent, text, x, y, width, height, size=14, bg_color="rgb(255, 255, 255)"):
-        """Helper function to create labels."""
         label = QtWidgets.QLabel(parent)
         label.setGeometry(QtCore.QRect(x, y, width, height))
         label.setText(text)
@@ -107,7 +83,6 @@ class Ui_Frame(object):
         return label
 
     def create_input(self, parent, x, y, width, height, size=14, bold=False):
-        """Helper function to create input fields."""
         input_field = QtWidgets.QLineEdit(parent)
         input_field.setGeometry(QtCore.QRect(x, y, width, height))
         input_field.setFont(self.create_font(size=size, bold=bold))
@@ -116,57 +91,117 @@ class Ui_Frame(object):
         input_field.setText("")
         return input_field
 
-    def retranslateUi(self, Frame):
-        _translate = QtCore.QCoreApplication.translate
-        Frame.setWindowTitle(_translate("Frame", "Frame"))
-        self.label.setText(_translate("Frame", "Nhận Dạng Biển Số Xe"))
-        self.btn_nhandang.setText(_translate("Frame", "Nhận Dạng"))
-        self.btn_info.setText(_translate("Frame", "Thông Tin"))
-        self.btn_chonanh.setText(_translate("Frame", "Chọn ảnh"))
-        self.lbl_result.setText(_translate("Frame", "result"))
-        self.original_img.setText(_translate("Frame", "Ảnh bạn"))
-
     def open_image(self):
-        """Open an image file."""
+        """Stop webcam and open an image file."""
+        if self.is_webcam_running:
+            self.stop_webcam()
+
         options = QFileDialog.Options()
-        file_name, _ = QFileDialog.getOpenFileName(None, "Open Image", "", "Images (*.png *.xpm *.jpg);;All Files (*)",
-                                                   options=options)
+        file_name, _ = QFileDialog.getOpenFileName(None, "Open Image", "", "Images (*.png *.xpm *.jpg);;All Files (*)", options=options)
         if file_name:
             pixmap = QPixmap(file_name)
-            self.original_img.setPixmap(pixmap.scaled(self.original_img.size(), QtCore.Qt.KeepAspectRatio))
+            self.lbl_result.setPixmap(pixmap.scaled(self.lbl_result.size(), QtCore.Qt.KeepAspectRatio))
+
+            # Run YOLO on the image
+            self.run_yolo(file_name)
 
     def open_webcam(self):
-        """Open the webcam."""
+        """Stop image display and open the webcam."""
+        if self.is_webcam_running:
+            return  # Webcam is already running
+
+        self.lbl_result.clear()  # Clear any image displayed
+
         self.cap = cv2.VideoCapture(0)
         if not self.cap.isOpened():
             print("Error: Could not open webcam.")
             return
 
+        self.is_webcam_running = True
         self.show_webcam()
 
     def show_webcam(self):
-        """Display webcam feed."""
+        """Display webcam feed inside the lbl_result and run YOLO."""
         ret, frame = self.cap.read()
         if ret:
+            # Run YOLO on the webcam feed
+            self.run_yolo_webcam(frame)
+
             # Convert frame to QImage format
             height, width, channel = frame.shape
             bytes_per_line = 3 * width
             image = QImage(frame.data, width, height, bytes_per_line, QImage.Format_BGR888)
             pixmap = QPixmap(image)
-            self.original_img.setPixmap(pixmap.scaled(self.original_img.size(), QtCore.Qt.KeepAspectRatio))
+            self.lbl_result.setPixmap(pixmap.scaled(self.lbl_result.size(), QtCore.Qt.KeepAspectRatio))
 
         # Continue capturing frames
-        self.cap.release()
-        self.cap = None
+        if self.cap.isOpened():
+            QTimer.singleShot(10, self.show_webcam)  # Re-run show_webcam every 10ms
+
+    def stop_webcam(self):
+        """Stop the webcam."""
+        if self.cap.isOpened():
+            self.cap.release()
+            self.cap = None
+            self.is_webcam_running = False
+            self.lbl_result.clear()  # Clear the webcam feed from the result label
+
+    def run_yolo(self, image):
+        """Run YOLO object detection on the input image (can be a webcam frame or image file)."""
+        img = cv2.imread(image)
+
+        # Perform YOLO prediction on the image
+        results = self.yolo_model(img)
+
+        # Process each detected object
+        for result in results:
+            for box in result.boxes:
+                # Extract the bounding box coordinates
+                x1, y1, x2, y2 = map(int, box.xyxy[0])  # x1, y1, x2, y2
+
+                # Draw bounding box around the detected object
+                cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)  # Green color
+
+                # Optional: You can display the label of the detected object
+                label = f"{result.names[int(box.cls)]}"  # Class name from the result
+                cv2.putText(img, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+
+        # Display the result in lbl_result
+        self.display_result(img)
+
+    def run_yolo_webcam(self, frame):
+        """Run YOLO on a webcam frame."""
+        # Perform YOLO prediction on the webcam frame
+        results = self.yolo_model(frame)
+
+        # Process each detected object
+        for result in results:
+            for box in result.boxes:
+                # Extract the bounding box coordinates
+                x1, y1, x2, y2 = map(int, box.xyxy[0])  # x1, y1, x2, y2
+
+                # Draw bounding box around the detected object
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)  # Green color
+
+                # Optional: You can display the label of the detected object
+                label = f"{result.names[int(box.cls)]}"  # Class name from the result
+                cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+
+    def display_result(self, img):
+        """Display image result in the PyQt label."""
+        height, width, channel = img.shape
+        bytes_per_line = 3 * width
+        q_image = QImage(img.data, width, height, bytes_per_line, QImage.Format_BGR888)
+        pixmap = QPixmap(q_image)
+        self.lbl_result.setPixmap(pixmap.scaled(self.lbl_result.size(), QtCore.Qt.KeepAspectRatio))
 
 
-# Run the application
+# Main window setup
 if __name__ == "__main__":
     import sys
-
     app = QtWidgets.QApplication(sys.argv)
-    Frame = QtWidgets.QFrame()
+    window = QtWidgets.QWidget()
     ui = Ui_Frame()
-    ui.setupUi(Frame)
-    Frame.show()
+    ui.setupUi(window)
+    window.show()
     sys.exit(app.exec_())

@@ -11,7 +11,17 @@
 from ultralytics import YOLO
 
 # Load a model
-model = YOLO("yolo11n-cls.pt")  # load a pretrained model (recommended for training)
+model = YOLO("yolo11n-cls.pt")  # Load a pretrained YOLO model
 
-# Train the model
-results = model.train(data="mnist", epochs=100, imgsz=32)
+# Train the model and save the results to a specific directory
+results = model.train(
+    data="mnist",          # Path to dataset configuration or dataset directory
+    epochs=100,            # Number of training epochs
+    imgsz=32,              # Image size
+    project="C:/Users/ASUS/Documents/GitHub/XLA_tieuluan/runs", # Custom project directory for saving results
+    name="mnist_training", # Custom name for this specific training run
+    save=True              # Ensure the weights and results are saved
+)
+
+# The model weights (best.pt and last.pt) will be saved in:
+# my_yolo_runs/mnist_training/weights/
