@@ -58,7 +58,7 @@ class Ui_Frame(object):
 
         # Load YOLO model
         self.yolo_model = YOLO('C:/Users/ASUS/Documents/GitHub/XLA_tieuluan/runs/detect/train10/weights/best.pt')
-
+        self.char_model = YOLO("C:/Users/ASUS/Documents/GitHub/XLA_tieuluan/runs/mnist_training/weights/best.pt")
     def create_font(self, size, bold=False):
         font = QtGui.QFont()
         font.setPointSize(size)
@@ -146,62 +146,35 @@ class Ui_Frame(object):
             self.is_webcam_running = False
             self.lbl_result.clear()  # Clear the webcam feed from the result label
 
-    def run_yolo(self, image):
-        """Run YOLO object detection on the input image (can be a webcam frame or image file)."""
-        img = cv2.imread(image)
+        def detect_license_plate(self):
+            """Detect the license plate and letters inside."""
+            image = cv2.imread(self.image_path)
+            results = self.plate_model(image)
 
-        # Perform YOLO prediction on the image
-        results = self.yolo_model(img)
+            for result in results:
+                for box in result.boxes.xyxy:
+                    x1, y1, x2, y2 = map(int, box)
+                    cropped_plate = image[y1:y2, x1:x2]
+                    char_results = self.char_model(cropped_plate)
 
-        # Process each detected object
-        for result in results:
-            for box in result.boxes:
-                # Extract the bounding box coordinates
-                x1, y1, x2, y2 = map(int, box.xyxy[0])  # x1, y1, x2, y2
+                    detected_text = self.extract_characters(char_results)
+                    self.let_bienso.setText(detected_text)
 
-                # Draw bounding box around the detected object
-                cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)  # Green color
+        def extract_characters(self, results):
+            """Extract characters from the detected results."""
+            detected_text = ""
+            for result in results:
+                labels = result.boxes.cls.cpu().numpy()
+                sorted_indices = result.boxes.xyxy[:, 0].argsort()
+                detected_text = "".join([chr(int(labels[i]) + 65) for i in sorted_indices])
+            return detected_text
 
-                # Optional: You can display the label of the detected object
-                label = f"{result.names[int(box.cls)]}"  # Class name from the result
-                cv2.putText(img, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-
-        # Display the result in lbl_result
-        self.display_result(img)
-
-    def run_yolo_webcam(self, frame):
-        """Run YOLO on a webcam frame."""
-        # Perform YOLO prediction on the webcam frame
-        results = self.yolo_model(frame)
-
-        # Process each detected object
-        for result in results:
-            for box in result.boxes:
-                # Extract the bounding box coordinates
-                x1, y1, x2, y2 = map(int, box.xyxy[0])  # x1, y1, x2, y2
-
-                # Draw bounding box around the detected object
-                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)  # Green color
-
-                # Optional: You can display the label of the detected object
-                label = f"{result.names[int(box.cls)]}"  # Class name from the result
-                cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-
-    def display_result(self, img):
-        """Display image result in the PyQt label."""
-        height, width, channel = img.shape
-        bytes_per_line = 3 * width
-        q_image = QImage(img.data, width, height, bytes_per_line, QImage.Format_BGR888)
-        pixmap = QPixmap(q_image)
-        self.lbl_result.setPixmap(pixmap.scaled(self.lbl_result.size(), QtCore.Qt.KeepAspectRatio))
-
-
-# Main window setup
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    window = QtWidgets.QWidget()
-    ui = Ui_Frame()
-    ui.setupUi(window)
-    window.show()
-    sys.exit(app.exec_())
+    # Run the application
+    if __name__ == "__main__":
+        import sys
+        app = QtWidgets.QApplication(sys.argv)
+        Frame = QtWidgets.QFrame()
+        ui = Ui_Frame()
+        ui.setupUi(Frame)
+        Frame.show()
+        sys.exit(app.exec_())

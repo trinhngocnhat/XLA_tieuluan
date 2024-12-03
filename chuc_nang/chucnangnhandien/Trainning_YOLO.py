@@ -16,7 +16,7 @@ model = YOLO("yolo11n-cls.pt")  # Load a pretrained YOLO model
 # Train the model and save the results to a specific directory
 results = model.train(
     data="mnist",          # Path to dataset configuration or dataset directory
-    epochs=100,            # Number of training epochs
+    epochs=30,            # Number of training epochs
     imgsz=32,              # Image size
     project="C:/Users/ASUS/Documents/GitHub/XLA_tieuluan/runs", # Custom project directory for saving results
     name="mnist_training", # Custom name for this specific training run
