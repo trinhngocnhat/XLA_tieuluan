@@ -1,124 +1,172 @@
-import sys
-import imutils
+# -*- coding: utf-8 -*-
+
+# Form implementation generated from reading ui file 'license_layout.ui'
+# Created by: PyQt5 UI code generator 5.15.5
+
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QApplication, QFileDialog
-from PyQt5.QtGui import QImage
-
-import layout_image
+from PyQt5.QtWidgets import QFileDialog
 import cv2
-import numpy as np
-import Preprocess
-import math
-
-img_path = None
-Ivehicle = None
-
-ADAPTIVE_THRESH_BLOCK_SIZE = 19
-ADAPTIVE_THRESH_WEIGHT = 9
-
-n = 1
-
-Min_char = 0.01
-Max_char = 0.09
-
-RESIZED_IMAGE_WIDTH = 20
-RESIZED_IMAGE_HEIGHT = 30
-
-# mô hình KNN
-npaClassifications = np.loadtxt("classificationS.txt", np.float32)
-npaFlattenedImages = np.loadtxt("flattened_images.txt", np.float32)
-npaClassifications = npaClassifications.reshape((npaClassifications.size, 1))
-kNearest = cv2.ml.KNearest_create()
-kNearest.train(npaFlattenedImages, cv2.ml.ROW_SAMPLE, npaClassifications)
+from PyQt5.QtGui import QImage, QPixmap
 
 
-class MainWindow(QtWidgets.QFrame, layout_image.Ui_Frame):
-    def __init__(self, *args, **kwargs):
-        super(MainWindow, self).__init__(*args, **kwargs)
-        self.setupUi(self)
-        self.btn_chonanh.clicked.connect(self.loadImage)
-        self.btn_nhandang.clicked.connect(self.imgae_license)
-        self.btn_info.setText("Mở Camera")  # Đổi tên nút thành "Mở Camera"
-        self.btn_info.clicked.connect(self.openCamera)  # Kết nối nút với hàm openCamera
+class Ui_Frame(object):
+    def setupUi(self, Frame):
+        Frame.setObjectName("Frame")
+        Frame.resize(1117, 863)
 
-    def loadImage(self):
-        self.img_path = QFileDialog.getOpenFileName(filter="Image (*.*)")[0]
-        self.Ivehicle = cv2.imread(self.img_path)
+        # Main layout
+        self.verticalLayout = QtWidgets.QVBoxLayout(Frame)
+        self.verticalLayout.setObjectName("verticalLayout")
 
-        # nguyen goc
-        self.cv2_path = cv2.imread(self.img_path)
+        # Main frame
+        self.frame = QtWidgets.QFrame(Frame)
+        self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.frame.setObjectName("frame")
 
-        self.img_goc = cv2.imread(self.img_path)
-        self.setPhoto()
+        # Title label
+        self.label = QtWidgets.QLabel(self.frame)
+        self.label.setGeometry(QtCore.QRect(180, 10, 781, 41))
+        self.label.setFont(self.create_font(size=22, bold=True))
+        self.label.setStyleSheet("color: qconicalgradient(cx:0.5, cy:0.5, angle:0, "
+                                 "stop:0 rgba(255, 255, 255, 255), stop:0.373979 rgba(255, 255, 255, 255), "
+                                 "stop:0.373991 rgba(33, 30, 255, 255), stop:0.624018 rgba(33, 30, 255, 255), "
+                                 "stop:0.624043 rgba(255, 0, 0, 255), stop:1 rgba(255, 0, 0, 255));")
+        self.label.setAlignment(QtCore.Qt.AlignCenter)
+        self.label.setObjectName("label")
 
-    def setPhoto(self):
-        self.Ivehicle = imutils.resize(self.Ivehicle, width=300, height=340)
-        frame = cv2.cvtColor(self.Ivehicle, cv2.COLOR_BGR2RGB)
-        self.Ivehicle = QImage(frame, frame.shape[1], frame.shape[0], frame.strides[0], QImage.Format_RGB888)
-        self.original_img.setPixmap(QtGui.QPixmap.fromImage(self.Ivehicle))
+        # Secondary frame for buttons and images
+        self.frame_2 = QtWidgets.QFrame(self.frame)
+        self.frame_2.setGeometry(QtCore.QRect(0, 60, 1101, 781))
+        self.frame_2.setFont(self.create_font(size=20, bold=True))
+        self.frame_2.setStyleSheet("background-color: qlineargradient(spread:repeat, x1:0.701199, y1:1, x2:0.716, "
+                                   "y2:0, stop:0 rgba(79, 200, 232, 255), stop:1 rgba(255, 255, 255, 255));")
+        self.frame_2.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame_2.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.frame_2.setObjectName("frame_2")
 
-    def openCamera(self):
-        """
-        Hàm mở camera sử dụng OpenCV.
-        """
-        cap = cv2.VideoCapture(0)  # Khởi tạo camera (0 là camera mặc định)
-        if not cap.isOpened():
-            print("Không thể mở camera!")
+        # Buttons
+        self.btn_nhandang = self.create_button(self.frame_2, "Nhận Dạng", 960, 320)
+        self.btn_info = self.create_button(self.frame_2, "Thông Tin", 880, 370)
+        self.btn_chonanh = self.create_button(self.frame_2, "Chọn ảnh", 800, 320)
+
+        # Result label
+        self.lbl_result = self.create_label(self.frame_2, "result", 10, 20, 771, 741)
+
+        # Image label for showing original image
+        self.original_img = self.create_label(self.frame_2, "Ảnh bạn", 790, 20, 301, 291)
+
+        # Input fields for vehicle license plate info
+        self.let_bienso = self.create_input(self.frame_2, 880, 450, 211, 71, size=22)
+        self.let_tinh = self.create_input(self.frame_2, 880, 550, 211, 41, size=14)
+        self.let_gio = self.create_input(self.frame_2, 880, 630, 211, 41, size=14, bold=True)
+        self.let_ngay = self.create_input(self.frame_2, 880, 710, 211, 41, size=14, bold=True)
+        self.let_ten = self.create_input(self.frame_2, 880, 770, 211, 41, size=14)
+
+        # Labels for the inputs
+        self.create_label(self.frame_2, "Biển Số: ", 790, 470, 81, 31, size=10)
+        self.create_label(self.frame_2, "Tỉnh", 790, 550, 81, 41, size=10)
+        self.create_label(self.frame_2, "Gio", 790, 630, 81, 41, size=10)
+        self.create_label(self.frame_2, "Ngày", 790, 710, 81, 31, size=10)
+
+        # Spacer
+        self.spacer = self.create_label(self.frame_2, "", 790, 610, 211, 151, bg_color="rgb(255, 255, 255)")
+
+        self.verticalLayout.addWidget(self.frame)
+        self.retranslateUi(Frame)
+        QtCore.QMetaObject.connectSlotsByName(Frame)
+
+        # Connect buttons to their respective functions
+        self.btn_chonanh.clicked.connect(self.open_image)
+        self.btn_info.clicked.connect(self.open_webcam)
+
+    def create_font(self, size, bold=False):
+        """Helper function to create a font."""
+        font = QtGui.QFont()
+        font.setPointSize(size)
+        font.setBold(bold)
+        font.setWeight(75)
+        return font
+
+    def create_button(self, parent, text, x, y):
+        """Helper function to create buttons."""
+        button = QtWidgets.QPushButton(parent)
+        button.setText(text)
+        button.setGeometry(QtCore.QRect(x, y, 121, 41))
+        button.setFont(self.create_font(size=11, bold=True))
+        return button
+
+    def create_label(self, parent, text, x, y, width, height, size=14, bg_color="rgb(255, 255, 255)"):
+        """Helper function to create labels."""
+        label = QtWidgets.QLabel(parent)
+        label.setGeometry(QtCore.QRect(x, y, width, height))
+        label.setText(text)
+        label.setFont(self.create_font(size=size))
+        label.setStyleSheet(f"background-color: {bg_color};")
+        label.setFrameShape(QtWidgets.QFrame.Box)
+        return label
+
+    def create_input(self, parent, x, y, width, height, size=14, bold=False):
+        """Helper function to create input fields."""
+        input_field = QtWidgets.QLineEdit(parent)
+        input_field.setGeometry(QtCore.QRect(x, y, width, height))
+        input_field.setFont(self.create_font(size=size, bold=bold))
+        input_field.setAlignment(QtCore.Qt.AlignCenter)
+        input_field.setStyleSheet("background-color: rgb(255, 255, 255);")
+        input_field.setText("")
+        return input_field
+
+    def retranslateUi(self, Frame):
+        _translate = QtCore.QCoreApplication.translate
+        Frame.setWindowTitle(_translate("Frame", "Frame"))
+        self.label.setText(_translate("Frame", "Nhận Dạng Biển Số Xe"))
+        self.btn_nhandang.setText(_translate("Frame", "Nhận Dạng"))
+        self.btn_info.setText(_translate("Frame", "Thông Tin"))
+        self.btn_chonanh.setText(_translate("Frame", "Chọn ảnh"))
+        self.lbl_result.setText(_translate("Frame", "result"))
+        self.original_img.setText(_translate("Frame", "Ảnh bạn"))
+
+    def open_image(self):
+        """Open an image file."""
+        options = QFileDialog.Options()
+        file_name, _ = QFileDialog.getOpenFileName(None, "Open Image", "", "Images (*.png *.xpm *.jpg);;All Files (*)",
+                                                   options=options)
+        if file_name:
+            pixmap = QPixmap(file_name)
+            self.original_img.setPixmap(pixmap.scaled(self.original_img.size(), QtCore.Qt.KeepAspectRatio))
+
+    def open_webcam(self):
+        """Open the webcam."""
+        self.cap = cv2.VideoCapture(0)
+        if not self.cap.isOpened():
+            print("Error: Could not open webcam.")
             return
 
-        while True:
-            ret, frame = cap.read()  # Đọc từng frame từ camera
-            if not ret:
-                print("Không thể đọc frame từ camera!")
-                break
+        self.show_webcam()
 
-            # Hiển thị frame lên cửa sổ OpenCV
-            cv2.imshow("Camera", frame)
+    def show_webcam(self):
+        """Display webcam feed."""
+        ret, frame = self.cap.read()
+        if ret:
+            # Convert frame to QImage format
+            height, width, channel = frame.shape
+            bytes_per_line = 3 * width
+            image = QImage(frame.data, width, height, bytes_per_line, QImage.Format_BGR888)
+            pixmap = QPixmap(image)
+            self.original_img.setPixmap(pixmap.scaled(self.original_img.size(), QtCore.Qt.KeepAspectRatio))
 
-            # Nhấn phím 'q' để thoát
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
-
-        cap.release()  # Giải phóng camera
-        cv2.destroyAllWindows()  # Đóng các cửa sổ OpenCV
-
-    def imgae_license(self, img_path):
-        # Tiền xử lý ảnh
-        global first_line, second_line
-        imgGrayscaleplate, imgThreshplate = Preprocess.preprocess(self.cv2_path)
-        canny_image = cv2.Canny(imgThreshplate, 250, 255)  # Tách biên bằng canny
-        kernel = np.ones((3, 3), np.uint8)
-        dilated_image = cv2.dilate(canny_image, kernel, iterations=1)  # tăng sharp cho edge (Phép nở)
-        # vẽ contour và lọc biển số
-        contours, hierarchy = cv2.findContours(dilated_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        contours = sorted(contours, key=cv2.contourArea, reverse=True)[:10]
-
-        screenCnt = []
-        for c in contours:
-            peri = cv2.arcLength(c, True)  # Tính chu vi
-            approx = cv2.approxPolyDP(c, 0.06 * peri, True)  # làm xấp xỉ đa giác, chỉ giữ contour có 4 cạnh
-            [x, y, w, h] = cv2.boundingRect(approx.copy())
-            ratio = w / h
-            if len(approx) == 4:
-                screenCnt.append(approx)
-                cv2.putText(self.cv2_path, str(len(approx.copy())), (x, y), cv2.FONT_HERSHEY_DUPLEX, 2, (0, 255, 0), 3)
-
-        if not screenCnt:
-            print("Không phát hiện biển số.")
-        else:
-            for i in screenCnt:
-                cv2.drawContours(self.cv2_path, [i], -1, (0, 255, 0), 3)  # Khoanh vùng biển số xe
-                # Xử lý ảnh biển số (Cắt, xoay, nhận dạng ký tự...)
-                # Phần này giữ nguyên.
-
-    # Các hàm khác giữ nguyên...
+        # Continue capturing frames
+        self.cap.release()
+        self.cap = None
 
 
-if __name__ == '__main__':
-    app = QtWidgets.QApplication([])
-    widget = MainWindow()
-    widget.show()
-    try:
-        sys.exit(app.exec_())
-    except (SystemError, SystemExit):
-        app.exit()
+# Run the application
+if __name__ == "__main__":
+    import sys
+
+    app = QtWidgets.QApplication(sys.argv)
+    Frame = QtWidgets.QFrame()
+    ui = Ui_Frame()
+    ui.setupUi(Frame)
+    Frame.show()
+    sys.exit(app.exec_())
